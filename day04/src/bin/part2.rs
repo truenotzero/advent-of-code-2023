@@ -18,29 +18,43 @@ fn split_card(line: &str) -> (&str, &str) {
     (lucky.trim(), pool.trim())
 }
 
-fn card_value((lucky, pool): (&str, &str)) -> u32 {
+fn card_wins((lucky, pool): (&str, &str)) -> u32 {
     let pool = pool.split(' ').collect::<Vec<_>>();
-    let exp = lucky.split(' ')
+    lucky.split(' ')
         .filter(|e| !e.is_empty())
         .filter(|e| pool.contains(e))
-        .count();
-    if exp == 0 { return 0; }
-    let exp = exp - 1;
-    let ret = 2u32.pow(exp as _);
-    ret
+        .count() as _
+}
+
+fn calculate_total_cards(card_wins: Vec<u32>) -> u32 {
+    let mut copies = vec![1; card_wins.len()];
+
+    for (i, wins) in card_wins.iter().enumerate() {
+        print!("#{} has {wins} match nums, so you win: ", i + 1);
+        for j in 1..=*wins {
+            let copy = copies[i];
+            copies[i + j as usize] += copy;
+            print!("{copy} of #{}, ", j+1);
+        }
+        println!();
+    };
+
+    copies.iter().sum()
 }
 
 fn process(input: &str) -> u32 {
-   input.lines()
+   let card_wins = input.lines()
         .map(split_card)
-        .map(card_value)
-        .sum()
+        .map(card_wins)
+        .collect::<Vec<_>>();
+
+    calculate_total_cards(card_wins)
 }
 
 #[cfg(test)]
 mod tests {
     #[test]
     fn example() {
-        assert_eq!(crate::do_file("./example.txt"), 13);
+        assert_eq!(crate::do_file("./example.txt"), 30);
     }
 }
