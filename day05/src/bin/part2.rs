@@ -23,7 +23,8 @@ impl Range {
         let source_range_end = self.source_range_start + self.range_len;
         if (self.source_range_start..source_range_end).contains(&n) {
             let delta = n - self.source_range_start;
-            Some(self.dest_range_start + delta)
+            let ret = self.dest_range_start + delta;
+            Some(ret)
         } else {
             None
         }
@@ -37,11 +38,10 @@ struct Map {
 impl Map {
     fn new(slice: &str) -> Self {
         let mut it = slice.split("\r\n");
-        let _descriptor = it.next();
+        let _descriptor = it.next().expect("No descriptor");
 
         let mut ranges = Vec::new();
         for line in it {
-            println!("Parsing line to map: *{line}*");
             let range = {
                 let mut it = line.split(' ');
                 let val_start = it.next().expect("No val_start");
@@ -63,10 +63,10 @@ impl Map {
     }
 
     fn apply(&self, n: usize) -> usize {
-        self.ranges.iter()
-            .filter_map(|range| range.map(n))
-            .next()
-            .unwrap_or(n)
+        let ret = self.ranges.iter()
+            .find_map(|range| range.map(n))
+            .unwrap_or(n);
+        ret
     }
 }
 
@@ -77,7 +77,7 @@ struct Chain {
 
 impl Chain {
     fn apply(&self, n: usize) -> usize {
-        self.maps.iter().fold(n, |acc, map| { map.apply(acc) })
+        self.maps.iter().fold(n, |acc, map| map.apply(acc))
     }
 
     fn add(&mut self, map: Map) {
@@ -102,11 +102,17 @@ fn process(input: &str) -> usize {
     let chain = input
         .map(Map::new)
         .collect::<Chain>();
-    
 
-    println!("seeds=[{seeds}]");
     seeds.split(' ')
         .map(|s| usize::from_str_radix(s, 10).expect("Failed parsing seeds"))
+        .collect::<Vec<_>>()
+        .chunks(2)
+        .flat_map(|seed_info| {
+            let range_start = seed_info[0];
+            let range_len = seed_info[1];
+            let range_end = range_start + range_len;
+            range_start..range_end
+        })
         .map(|s| chain.apply(s))
         .min().unwrap()
 }
@@ -115,6 +121,6 @@ fn process(input: &str) -> usize {
 mod tests {
     #[test]
     fn example() {
-        assert_eq!(crate::do_file("./example.txt"), 35);
+        assert_eq!(crate::do_file("./example.txt"), 46);
     }
 }
