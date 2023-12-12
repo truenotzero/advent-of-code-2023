@@ -2,6 +2,7 @@ use std::{collections::HashMap, fmt::Debug};
 
 
 fn main() {
+    // TODO: unsolved
     do_file("./input.txt");
 }
 
@@ -28,7 +29,7 @@ impl Debug for Card {
 
 impl Card {
     fn new(ch: char) -> Option<Self> {
-        let allowed_values = ['2','3','4','5','6','7','8','9','T','J','Q','K','A'];
+        let allowed_values = ['J','2','3','4','5','6','7','8','9','T','Q','K','A'];
         if allowed_values.contains(&ch) { 
             Some(Self {
                 val: allowed_values
@@ -70,16 +71,21 @@ impl From<&str> for Hand {
             .expect("Can't parse cards");
 
         let mut counts = HashMap::new();
+        let mut joker = None;
         for card in cards {
+            let card: Card = card;
+            if card.face == 'J' {
+                joker = Some(card);
+            }
             let val = counts.get(&card).unwrap_or(&0) + 1;
             counts.insert(card, val);
         }
 
         // removing max
         // finds the card that has the most appearances
-        // and gives back said number of appearances
+        // and gives back said card + number of appearances
         // and removes it from the map
-        fn rem_max(map: &mut HashMap<Card, Num>) -> Num {
+        fn rem_max(map: &mut HashMap<Card, Num>) -> (Card, Num) {
             let ret = {
                 let (r1, r2) = map
                 .iter()
@@ -88,16 +94,25 @@ impl From<&str> for Hand {
                 (*r1, *r2)
             };
             map.remove(&ret.0);
-            ret.1
+            ret
         }
 
-        let times = rem_max(&mut counts);
+        let (mut card, mut times) = rem_max(&mut counts);
+        if card.face == 'J' && counts.len() > 0 {
+            let (cc, tt) = rem_max(&mut counts);
+            card = cc;
+            times += tt;
+        } else if times > 1 {
+            if let Some(joker) = joker {
+                times += counts.get(&joker).map(|e| *e).unwrap_or_default();
+            }
+        }
 
         use Type as T;
         let r#type = match times {
             1 => T::HighCard,
             2 => {
-                let lotimes = rem_max(&mut counts);
+                let (_, lotimes) = rem_max(&mut counts);
                 if lotimes == 2 {
                     T::TwoPair
                 } else {
@@ -105,7 +120,7 @@ impl From<&str> for Hand {
                 }
             },
             3 => {
-                let lotimes = rem_max(&mut counts);
+                let (_,lotimes) = rem_max(&mut counts);
                 if lotimes == 2 {
                     // fullhouse!
                     T::FullHouse
@@ -137,9 +152,10 @@ fn process(input: &str) -> Num {
     hands
         .into_iter()
         .enumerate()
-        .fold(0, |acc, (i, (_hand, bet))| {
+        .fold(0, |acc, (i, (hand, bet))| {
             let rank = (i as Num) + 1;
             let win = bet * rank;
+            println!("hand={hand:?} bet={bet} rank={rank} -> win={win}");
             acc + win
         })
 }
@@ -148,6 +164,6 @@ fn process(input: &str) -> Num {
 mod tests {
     #[test]
     fn example() {
-        assert_eq!(crate::do_file("./example.txt"), 6440);
+        assert_eq!(crate::do_file("./example.txt"), 5905);
     }
 }
