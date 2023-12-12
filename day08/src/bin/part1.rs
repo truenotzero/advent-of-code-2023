@@ -31,9 +31,13 @@ fn process(input: &str) -> Num {
         
         instructions
             .chars()
-            .cycle()
+            .cycle() // creates an infinite, looping iterator
             .enumerate()
             .try_fold("AAA", |node, (stepno, step)| {
+                // abuse try_fold's short-circuit mechanic
+                // allows us to use fold, and allows us to return whenever we please
+                // the side effect is that the desired output is stored
+                // as the error variant of the returned Result 
                 if node == "ZZZ" {
                     Err(stepno as _)
                 } else {
@@ -46,7 +50,7 @@ fn process(input: &str) -> Num {
                     Ok(next)
                 }
             })
-            .unwrap_err()
+            .unwrap_err() // retrieve the value from try_fold hack
 }
 
 #[cfg(test)]
