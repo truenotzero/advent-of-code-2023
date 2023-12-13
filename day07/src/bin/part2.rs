@@ -2,7 +2,6 @@ use std::{collections::HashMap, fmt::Debug};
 
 
 fn main() {
-    // TODO: unsolved
     do_file("./input.txt");
 }
 
@@ -98,11 +97,13 @@ impl From<&str> for Hand {
         }
 
         let (mut card, mut times) = rem_max(&mut counts);
-        if card.face == 'J' && counts.len() > 0 {
-            let (cc, tt) = rem_max(&mut counts);
-            card = cc;
-            times += tt;
-        } else if times > 1 {
+        if card.face == 'J' {
+            if times <= 4 {
+                let (cc, tt) = rem_max(&mut counts);
+                card = cc;
+                times += tt;
+            }
+        } else if times >= 1 {
             if let Some(joker) = joker {
                 times += counts.get(&joker).map(|e| *e).unwrap_or_default();
             }
@@ -152,10 +153,10 @@ fn process(input: &str) -> Num {
     hands
         .into_iter()
         .enumerate()
-        .fold(0, |acc, (i, (hand, bet))| {
+        .fold(0, |acc, (i, (_hand, bet))| {
             let rank = (i as Num) + 1;
             let win = bet * rank;
-            println!("hand={hand:?} bet={bet} rank={rank} -> win={win}");
+            // println!("hand={hand:?} bet={bet} rank={rank} -> win={win}");
             acc + win
         })
 }
