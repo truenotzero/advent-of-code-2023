@@ -14,12 +14,6 @@ struct Set {
 }
 
 impl Set {
-    fn is_legal(&self, bag: &Self) -> bool {
-        self.red_cubes <= bag.red_cubes
-            && self.green_cubes <= bag.green_cubes
-            && self.blue_cubes <= bag.blue_cubes
-    }
-
     fn power(&self) -> u32 {
         let ret = self.blue_cubes * self.green_cubes * self.red_cubes;
         ret
@@ -28,19 +22,10 @@ impl Set {
 
 #[derive(Debug)]
 struct Game {
-    id: u32,
     sets: Vec<Set>,
 }
 
 impl Game {
-    fn is_legal(&self, bag: &Set) -> bool {
-        self.sets
-            .iter()
-            .map(|set| set.is_legal(bag))
-            .reduce(|a, e| a && e)
-            .unwrap()
-    }
-
     fn minimum_set(&self) -> Set {
         let (red_cubes,
             green_cubes,
@@ -57,9 +42,7 @@ impl Game {
 
 impl From<&str> for Game {
     fn from(value: &str) -> Self {
-        let (idhalf, sethalf) = value.split_once(':').expect("No colon in string");
-        let (_, id) = idhalf.split_once(' ').expect("Bad format: 'Game #'");
-        let id = u32::from_str_radix(id, 10).expect("Can't convert game id to num");
+        let (_, sethalf) = value.split_once(':').expect("No colon in string");
 
         let sets = sethalf
             .split(';') // split into sets by ;
@@ -80,7 +63,7 @@ impl From<&str> for Game {
                 ret
             })
             .collect();
-        Game { id, sets }
+        Game { sets }
     }
 }
 
@@ -95,7 +78,7 @@ fn process(record: &str) -> u32 {
 
 #[cfg(test)]
 mod tests {
-    use crate::{process, Set};
+    use crate::process;
 
     #[test]
     fn example() {
