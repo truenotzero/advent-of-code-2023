@@ -1,8 +1,16 @@
 [package]
-name = "day07"
+name = "day01"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+
+[[bin]]
+name="day01-part1"
+path="src/bin/part1.rs"
+
+[[bin]]
+name="day01-part2"
+path="src/bin/part2.rs"

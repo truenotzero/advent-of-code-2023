@@ -1,0 +1,12 @@
+[package]
+name = "day02"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name="day02-part1"
+path="src/bin/part1.rs"
+
+[[bin]]
+name="day02-part2"
+path="src/bin/part2.rs"
