@@ -97,6 +97,7 @@ impl From<&str> for Hand {
         }
 
         let (mut card, mut times) = rem_max(&mut counts);
+        #[allow(unused_assignments)]
         if card.face == 'J' {
             if times <= 4 {
                 let (cc, tt) = rem_max(&mut counts);
