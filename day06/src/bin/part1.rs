@@ -30,7 +30,7 @@ impl Race {
         // check from start
         let start = (1..self.duration)
             .map(|w| (w, self.simulate(w)))
-            .find(|(w, d)| *d > self.record_distance)
+            .find(|(_w, d)| *d > self.record_distance)
             .map(|(w,_)| w)
             .expect("Failed to break record: no starting value");
 
