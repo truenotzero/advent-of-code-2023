@@ -1,11 +1,10 @@
 use std::collections::{HashMap, HashSet};
 
 fn main() {
-    // do_file("./input.txt");
-    do_file(r#"C:\Users\true\Documents\dev\rust\advent-of-code-2023\day08\input.txt"#);
+    do_file("./input.txt");
 }
 
-type Num = i32;
+type Num = i64;
 
 fn do_file(filename: &str) -> Num {
     let input = std::fs::read_to_string(filename).unwrap();
@@ -55,41 +54,50 @@ fn measure_cycle<I: Iterator<Item=char>>(initial_node: &str, nodes: &HashMap<&st
 }
 
 fn prime_sieve(max: Num) -> Vec<Num> {
-    let mut ret = vec![true; (max+1) as _];
+    let mut sieve = vec![true; (max+1) as _];
     // set some non-primes by hand
-    if ret.len() > 0 { ret[0] = false; }
-    if ret.len() > 1 { ret[1] = false; }
+    if sieve.len() > 0 { sieve[0] = false; }
+    if sieve.len() > 1 { sieve[1] = false; }
 
-    for i in 0..ret.len() {
-        let p = ret[i as usize];
+    for i in 0..sieve.len() {
+        let p = sieve[i as usize];
         if !p { continue }
-        for j in (i..ret.len()).step_by(i) {
+        for j in (i..sieve.len()).step_by(i) {
             if i == j { continue }
-            ret[j as usize] = false;
+            sieve[j as usize] = false;
         }
     }
-
+    
+    let mut ret = Vec::new();
+    for i in 0..(max+1) {
+        if sieve[i as usize] {
+            ret.push(i);
+        }
+    }
     ret
-        .into_iter()
-        .enumerate()
-        .filter_map(|(idx, e)| if e { Some(idx as _) } else { None })
-        .collect()
 }
 
-fn factorize(n: Num) -> HashSet<Num> {
+fn factorize(n: Num, primes: &Vec<Num>) -> HashSet<Num> {
     let mut factors = HashSet::new();
-    for p in prime_sieve(n) {
-        if p % n == 0 {
+    for &p in primes {
+        if n % p == 0 {
             factors.insert(p);
         }
     }
     factors
 }
 
-fn least_common_multiple(acc: Num, e: Num) -> Num {
-    let acc = factorize(acc);
-    let e = factorize(e);
-    acc.into_iter().chain(e.into_iter()).product()
+fn least_common_multiple<I: IntoIterator<Item=Num>>(nums: I) -> Num {
+    let nums = nums.into_iter().collect::<Vec<_>>();
+    let max = *nums.iter().max().expect("Empty iterator");
+    let primes = prime_sieve(max);
+
+    nums
+        .into_iter()
+        .flat_map(|n| factorize(n, &primes))
+        .collect::<HashSet<_>>()
+        .into_iter()
+        .product()
 }
 
 fn process(input: &str) -> Num {
@@ -107,13 +115,14 @@ fn process(input: &str) -> Num {
         })
         .collect::<HashMap<_, _>>();
 
-    nodes
+    let cycles = nodes
         .iter()
         .filter_map(|(key, _)| if key.ends_with('A') { Some(*key) } else { None }) // collect starting nodes (**A)
         .map(|node| reach_z(node, &nodes, instructions.chars().cycle()))
         .map(|(node, instructions)| measure_cycle(node, &nodes, instructions))
-        .reduce(least_common_multiple)
-        .unwrap()
+        ;
+
+    least_common_multiple(cycles)
 }
 
 #[cfg(test)]
