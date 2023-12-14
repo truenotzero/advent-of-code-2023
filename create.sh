@@ -30,6 +30,9 @@ new() {
         echo Setting up hierarchy...
         echo Removing "src/main.rs"
         rm "$project/src/main.rs"
+        echo Removing git repo...
+        rm -rf "$project/.git"
+        rm "$project/.gitignore"
         echo Creating "src/bin/"
         mkdir "$project/src/bin"
         echo Creating input.txt
