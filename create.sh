@@ -135,5 +135,7 @@ if [ "$?" -ne 0 ]; then
     exit
 fi
 
-echo All done, running cargo check...
-cargo check --package "$arg"
+if [ "$command" != "run" ]; then
+    echo All done, running cargo check...
+    cargo check --package "$arg"
+fi
