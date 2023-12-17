@@ -2,6 +2,7 @@ use std::num::Wrapping;
 
 
 fn main() {
+    // first try!
     do_file("./input.txt");
 }
 
@@ -39,12 +40,14 @@ mod tests {
 
     #[test]
     fn test_hash() {
+        // first try!
         let hash = crate::hash("HASH");
         assert_eq!(hash, Wrapping(52));
     }
 
     #[test]
     fn example() {
+        // first try!
         assert_eq!(crate::do_file("./example.txt"), 1320);
     }
 }
