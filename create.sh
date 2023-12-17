@@ -97,8 +97,28 @@ add_part2() {
     edit_cfg "$toml" "$day" "$part" 
 }
 
+run() {
+    local day="$1"
+    local part="$2"
+    if [ -z "$part" ]; then local part="part2"; fi
+
+    pushd "$CRATES_DIR/$day"
+    if [ "$?" -ne 0 ]; then return 1; fi
+    if [ -f "./Cargo.toml" ]; then
+        local prefix="./src/bin"
+        if [ ! -f "$prefix/$part.rs" ]; then
+            local part="part1"
+        fi
+
+        cargo run --bin "$day-$part"
+    fi
+
+    popd
+}
+
 command="$1"
 arg="$2"
+arg2="$3"
 
 if [ "$command" == "add" ]; then
     new "$arg"
@@ -106,9 +126,14 @@ elif [ "$command" == "part1" ]; then
     add_part1 "$arg"
 elif [ "$command" == "part2" ]; then
     add_part2 "$arg" 
+elif [ "$command" == "run" ]; then
+    run "$arg" "$arg2"
+else false; fi # so that 'cargo run' doesn't run below
+
+if [ "$?" -ne 0 ]; then
+    echo Failed to run with args: $@
+    exit
 fi
 
-if [ "$?" -eq 0 ]; then
-    echo All done, running cargo check...
-    cargo check --package "$arg"
-fi
+echo All done, running cargo check...
+cargo check --package "$arg"
