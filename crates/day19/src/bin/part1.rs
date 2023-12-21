@@ -89,7 +89,7 @@ type WorkflowName<'a> = &'a str;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Target<'a> {
-    Workspace(WorkflowName<'a>),
+    Workflow(WorkflowName<'a>),
     Reject,
     Accept,
 }
@@ -99,7 +99,7 @@ impl<'a> From<&'a str> for Target<'a> {
         match value {
             "R" => Self::Reject,
             "A" => Self::Accept,
-            e => Self::Workspace(e),
+            e => Self::Workflow(e),
         }
     }
 }
@@ -226,7 +226,7 @@ impl<'a> WorkflowLike<'a> for HashMap<&'a str, Vec<Rule<'a>>> {
             for rule in &self[next] {
                 if let Some(e) = rule.apply(part) {
                     match e {
-                        Target::Workspace(w) => {
+                        Target::Workflow(w) => {
                             next = w;
                             continue 'outer;
                         },
